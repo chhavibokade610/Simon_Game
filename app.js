@@ -4,19 +4,11 @@ let btns = ["red", "yellow", "green", "purple"];
 let started = false;
 let level = 0;
 let highScore = 0;
-let h2 = document.querySelector("h2");
-let highScoreDisplay = document.getElementById("highScore");
+
+const h2 = document.querySelector("h2");
+const highScoreDisplay = document.getElementById("highScore");
 highScoreDisplay.innerText = `High Score: ${highScore}`;
-
-document.addEventListener("keypress", startGame);
-document.addEventListener("touchstart", startGame);
-
-function startGame() {
-  if (!started) {
-    started = true;
-    levelUp();
-  }
-}
+const allBtns = document.querySelectorAll(".btn");
 
 function btnFlash(btn) {
   btn.classList.add("flash");
@@ -27,41 +19,40 @@ function levelUp() {
   userSeq = [];
   level++;
   h2.innerText = `Level ${level}`;
-  let randIdx = Math.floor(Math.random() * 4);
-  let randColor = btns[randIdx];
-  let randBtn = document.querySelector(`.${randColor}`);
+  const randIdx = Math.floor(Math.random() * 4);
+  const randColor = btns[randIdx];
+  const randBtn = document.querySelector(`.${randColor}`);
   gameSeq.push(randColor);
   btnFlash(randBtn);
 }
 
 function checkAns(idx) {
   if (userSeq[idx] === gameSeq[idx]) {
-    if (userSeq.length === gameSeq.length) setTimeout(levelUp, 1000);
+    if (userSeq.length === gameSeq.length) {
+      setTimeout(levelUp, 800);
+    }
   } else {
     h2.innerHTML = `Game Over! Your score was <b>${
       level - 1
-    }</b><br>Tap anywhere or press any key to start`;
+    }</b><br>Tap or press any key to restart`;
     gameOver();
     if (level - 1 > highScore) {
       highScore = level - 1;
       highScoreDisplay.innerText = `High Score: ${highScore}`;
     }
-    reset();
+    disableButtons();
+    setTimeout(reset, 1000);
   }
 }
 
 function btnPress() {
-  btnFlash(this);
-  let userColor = this.getAttribute("id");
+  if (!started) return;
+  const btn = this;
+  btnFlash(btn);
+  const userColor = btn.getAttribute("id");
   userSeq.push(userColor);
   checkAns(userSeq.length - 1);
 }
-
-let allBtns = document.querySelectorAll(".btn");
-allBtns.forEach((btn) => {
-  btn.addEventListener("click", btnPress);
-  btn.addEventListener("touchstart", btnPress);
-});
 
 function reset() {
   started = false;
@@ -72,5 +63,25 @@ function reset() {
 
 function gameOver() {
   document.body.classList.add("lose");
-  setTimeout(() => document.body.classList.remove("lose"), 800);
+  setTimeout(() => {
+    document.body.classList.remove("lose");
+    enableButtons();
+  }, 800);
 }
+
+function disableButtons() {
+  allBtns.forEach((btn) => btn.classList.add("disabled"));
+}
+
+function enableButtons() {
+  allBtns.forEach((btn) => btn.classList.remove("disabled"));
+}
+
+document.addEventListener("click", () => {
+  if (!started) {
+    started = true;
+    levelUp();
+  }
+});
+
+allBtns.forEach((btn) => btn.addEventListener("click", btnPress));
